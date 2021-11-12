@@ -1,0 +1,87 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+EXlotkaVolterra.py
+
+Purpose: Numerically integrate the Lotka-Volterra system using a hard-coded 
+RK4
+dx/dt = alpha*x - beta*x*y
+dy/dt = gamma*x*y - delta*y
+
+o x and y vals passed along via array r
+o this code marks my first attempt to use the "def" functionality
+o Borrowing some syntax from Newman (2012) ch.8.2 (directly from book)
+
+Created on Mon Jun 14 09:53:05 2021
+@author:CB
+"""
+
+import math
+import numpy as np
+import random
+import matplotlib.pyplot as plt
+
+
+
+# ----------- [User Params]
+# --- params
+alpha = 1      # prey growth coeffic.
+beta = 0.5     # prey interaction coeffic.
+gamma = 0.5    # predator reproduction coeffic
+delta = 2      # predator death factor
+# --- ICs
+x0 = 2.0       # initial prey pop. size
+y0 = 2.0       # initial predator pop. size
+# --- time params
+tS = 0         # start time
+tE = 30        # end time
+N = 1000;      # num of time points to use
+# -----------
+
+# ----------- [define ODE system]
+def f(r,t):
+    x = r[0]
+    y = r[1]
+    fx = alpha*x - beta*x*y
+    fy = gamma*x*y - delta*y
+    return np.array([fx,fy],float)
+
+# --- bookkeeping
+h = (tE-tS)/N   # step-size
+tpoints = np.arange(tS,tE,h)   # time point array
+x = []
+y = [] 
+#r = np.array([x0,y0],float)
+r = [x0,y0]
+indx = 0
+# --- integration loop
+for t in tpoints:
+    #x.np.append(r[0])
+    #y.np.append(r[1])
+    x = np.insert(x,indx,r[0])
+    y = np.insert(y,indx,r[1])
+    k1 = h*f(r,t)
+    k2 = h*f(r+0.5*k1,t+0.5*h)
+    k3 = h*f(r+0.5*k2,t+0.5*h)
+    k4 = h*f(r+k3,t+h)
+    r += (k1+2*k2+2*k3+k4)/6
+    indx = indx+1
+  
+    
+# --- visualize
+# time waveforms
+fig1, ax1 = plt.subplots()
+ax1.plot(tpoints,x,'b-',label='prey')
+ax1.plot(tpoints,y,'r--',label='predator')
+#plt.xlim([-1,1]) 
+ax1.set_xlabel('Time')  
+ax1.set_ylabel('Population size') 
+ax1.set_title('Lotka-Volterra System')
+ax1.grid()
+ax1.legend(loc=1)
+# phase space
+fig2, ax2 = plt.subplots()
+ax2.plot(x,y,'b-',label='X')
+ax2.set_xlabel('x')  
+ax2.set_ylabel('y') 
+ax2.grid()
